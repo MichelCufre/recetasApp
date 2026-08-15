@@ -1,0 +1,834 @@
+Usando la configuración de inicio de backend\src\BarFlow.Api\Properties\launchSettings.json...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (19ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      PRAGMA journal_mode = 'wal';
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "AppSettings" (
+          "Id" INTEGER NOT NULL CONSTRAINT "PK_AppSettings" PRIMARY KEY AUTOINCREMENT,
+          "Currency" TEXT NOT NULL,
+          "DefaultVat" TEXT NOT NULL,
+          "MinimumMargin" TEXT NOT NULL,
+          "DefaultProteinTarget" TEXT NOT NULL,
+          "DefaultWastePercent" TEXT NOT NULL,
+          "DefaultPackageCost" TEXT NOT NULL,
+          "DefaultLabelCost" TEXT NOT NULL,
+          "HourlyLaborCost" TEXT NOT NULL,
+          "EstimatedElectricityCost" TEXT NOT NULL
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "Ingredients" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_Ingredients" PRIMARY KEY,
+          "Name" TEXT NOT NULL,
+          "Category" TEXT NOT NULL,
+          "Brand" TEXT NULL,
+          "Supplier" TEXT NULL,
+          "PurchaseUnit" INTEGER NOT NULL,
+          "PackageQuantity" TEXT NOT NULL,
+          "NetPrice" TEXT NOT NULL,
+          "VatPercent" TEXT NOT NULL,
+          "BaseUnit" INTEGER NOT NULL,
+          "DensityGPerMl" TEXT NULL,
+          "PriceUpdatedAt" TEXT NOT NULL,
+          "Notes" TEXT NULL,
+          "Active" INTEGER NOT NULL,
+          "StockCurrent" TEXT NOT NULL,
+          "StockMinimum" TEXT NOT NULL
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "Recipes" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_Recipes" PRIMARY KEY,
+          "Name" TEXT NOT NULL,
+          "Description" TEXT NULL,
+          "Flavor" TEXT NULL,
+          "Category" TEXT NOT NULL,
+          "Keto" INTEGER NOT NULL,
+          "SugarFree" INTEGER NOT NULL,
+          "Vegan" INTEGER NOT NULL,
+          "Active" INTEGER NOT NULL,
+          "ExpectedBars" INTEGER NOT NULL,
+          "TargetWeightPerBar" TEXT NOT NULL,
+          "FinalBatchWeight" TEXT NULL,
+          "TargetProteinPerBar" TEXT NOT NULL,
+          "WastePercent" TEXT NOT NULL,
+          "PackageCostPerBar" TEXT NOT NULL,
+          "LabelCostPerBar" TEXT NOT NULL,
+          "LaborPerBatch" TEXT NOT NULL,
+          "ElectricityPerBatch" TEXT NOT NULL,
+          "TransportPerBatch" TEXT NOT NULL,
+          "OtherCostsPerBatch" TEXT NOT NULL,
+          "IndirectCostsPercent" TEXT NOT NULL,
+          "CreatedAt" TEXT NOT NULL,
+          "UpdatedAt" TEXT NOT NULL,
+          "Notes" TEXT NULL
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "IngredientNutritions" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_IngredientNutritions" PRIMARY KEY,
+          "IngredientId" TEXT NOT NULL,
+          "Kcal" TEXT NOT NULL,
+          "Protein" TEXT NOT NULL,
+          "Carbohydrates" TEXT NOT NULL,
+          "Sugars" TEXT NOT NULL,
+          "Fiber" TEXT NOT NULL,
+          "TotalFat" TEXT NOT NULL,
+          "SaturatedFat" TEXT NOT NULL,
+          "TransFat" TEXT NOT NULL,
+          "SodiumMg" TEXT NOT NULL,
+          "CholesterolMg" TEXT NOT NULL,
+          "Polyols" TEXT NOT NULL,
+          "SourceType" INTEGER NOT NULL,
+          "Source" TEXT NULL,
+          "SourceUrl" TEXT NULL,
+          CONSTRAINT "FK_IngredientNutritions_Ingredients_IngredientId" FOREIGN KEY ("IngredientId") REFERENCES "Ingredients" ("Id") ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "IngredientPriceHistory" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_IngredientPriceHistory" PRIMARY KEY,
+          "IngredientId" TEXT NOT NULL,
+          "PreviousPrice" TEXT NOT NULL,
+          "NewPrice" TEXT NOT NULL,
+          "ChangedAt" TEXT NOT NULL,
+          "Supplier" TEXT NULL,
+          "PackageQuantity" TEXT NOT NULL,
+          "PurchaseUnit" INTEGER NOT NULL,
+          CONSTRAINT "FK_IngredientPriceHistory_Ingredients_IngredientId" FOREIGN KEY ("IngredientId") REFERENCES "Ingredients" ("Id") ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "ProductionBatches" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_ProductionBatches" PRIMARY KEY,
+          "RecipeId" TEXT NOT NULL,
+          "ProducedAt" TEXT NOT NULL,
+          "Batches" TEXT NOT NULL,
+          "ExpectedBars" INTEGER NOT NULL,
+          "ActualBars" INTEGER NOT NULL,
+          "DiscardedBars" INTEGER NOT NULL,
+          "ActualWeight" TEXT NOT NULL,
+          "TotalCostSnapshot" TEXT NOT NULL,
+          "Notes" TEXT NULL,
+          CONSTRAINT "FK_ProductionBatches_Recipes_RecipeId" FOREIGN KEY ("RecipeId") REFERENCES "Recipes" ("Id") ON DELETE RESTRICT
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "RecipeIngredients" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_RecipeIngredients" PRIMARY KEY,
+          "RecipeId" TEXT NOT NULL,
+          "IngredientId" TEXT NOT NULL,
+          "Quantity" TEXT NOT NULL,
+          "Unit" INTEGER NOT NULL,
+          "Section" INTEGER NOT NULL,
+          "Optional" INTEGER NOT NULL,
+          "Observation" TEXT NULL,
+          CONSTRAINT "FK_RecipeIngredients_Ingredients_IngredientId" FOREIGN KEY ("IngredientId") REFERENCES "Ingredients" ("Id") ON DELETE RESTRICT,
+          CONSTRAINT "FK_RecipeIngredients_Recipes_RecipeId" FOREIGN KEY ("RecipeId") REFERENCES "Recipes" ("Id") ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "SalePrices" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_SalePrices" PRIMARY KEY,
+          "RecipeId" TEXT NOT NULL,
+          "Channel" INTEGER NOT NULL,
+          "Price" TEXT NOT NULL,
+          CONSTRAINT "FK_SalePrices_Recipes_RecipeId" FOREIGN KEY ("RecipeId") REFERENCES "Recipes" ("Id") ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE "ProductionBatchIngredients" (
+          "Id" TEXT NOT NULL CONSTRAINT "PK_ProductionBatchIngredients" PRIMARY KEY,
+          "ProductionBatchId" TEXT NOT NULL,
+          "IngredientId" TEXT NOT NULL,
+          "IngredientName" TEXT NOT NULL,
+          "QuantityBase" TEXT NOT NULL,
+          "UnitCostSnapshot" TEXT NOT NULL,
+          "TotalCostSnapshot" TEXT NOT NULL,
+          CONSTRAINT "FK_ProductionBatchIngredients_ProductionBatches_ProductionBatchId" FOREIGN KEY ("ProductionBatchId") REFERENCES "ProductionBatches" ("Id") ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX "IX_IngredientNutritions_IngredientId" ON "IngredientNutritions" ("IngredientId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX "IX_IngredientPriceHistory_IngredientId" ON "IngredientPriceHistory" ("IngredientId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX "IX_Ingredients_Name" ON "Ingredients" ("Name");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX "IX_ProductionBatches_RecipeId" ON "ProductionBatches" ("RecipeId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX "IX_ProductionBatchIngredients_ProductionBatchId" ON "ProductionBatchIngredients" ("ProductionBatchId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX "IX_RecipeIngredients_IngredientId" ON "RecipeIngredients" ("IngredientId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX "IX_RecipeIngredients_RecipeId" ON "RecipeIngredients" ("RecipeId");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX "IX_SalePrices_RecipeId_Channel" ON "SalePrices" ("RecipeId", "Channel");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Ingredients" AS "i")
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[@p0='?' (DbType = Int32), @p1='?' (Size = 3), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Decimal), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "AppSettings" ("Id", "Currency", "DefaultLabelCost", "DefaultPackageCost", "DefaultProteinTarget", "DefaultVat", "DefaultWastePercent", "EstimatedElectricityCost", "HourlyLaborCost", "MinimumMargin")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 6), @p5='?' (DbType = Decimal), @p6='?' (Size = 7), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 9), @p5='?' (DbType = Decimal), @p6='?' (Size = 24), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 11), @p5='?' (DbType = Decimal), @p6='?' (Size = 6), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 12), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 11), @p5='?' (DbType = Decimal), @p6='?' (Size = 17), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 6), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 3), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 10), @p5='?' (DbType = Decimal), @p6='?' (Size = 15), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 7), @p5='?' (DbType = Decimal), @p6='?' (Size = 19), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 19), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 10), @p5='?' (DbType = Decimal), @p6='?' (Size = 20), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 11), @p5='?' (DbType = Decimal), @p6='?' (Size = 4), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 8), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 6), @p5='?' (DbType = Decimal), @p6='?' (Size = 17), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 7), @p5='?' (DbType = Decimal), @p6='?' (Size = 14), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 11), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 8), @p5='?' (DbType = Decimal), @p6='?' (Size = 4), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 7), @p5='?' (DbType = Decimal), @p6='?' (Size = 15), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 6), @p5='?' (DbType = Decimal), @p6='?' (Size = 7), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 11), @p5='?' (DbType = Decimal), @p6='?' (Size = 17), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 9), @p5='?' (DbType = Decimal), @p6='?' (Size = 13), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 12), @p5='?' (DbType = Decimal), @p6='?' (Size = 6), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 8), @p5='?' (DbType = Decimal), @p6='?' (Size = 4), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (DbType = Int32), @p3='?', @p4='?' (Size = 5), @p5='?' (DbType = Decimal), @p6='?' (Size = 5), @p7='?' (DbType = Decimal), @p8='?', @p9='?' (DbType = Decimal), @p10='?' (DbType = DateTime), @p11='?' (DbType = Int32), @p12='?' (DbType = Decimal), @p13='?' (DbType = Decimal), @p14='?', @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Ingredients" ("Id", "Active", "BaseUnit", "Brand", "Category", "DensityGPerMl", "Name", "NetPrice", "Notes", "PackageQuantity", "PriceUpdatedAt", "PurchaseUnit", "StockCurrent", "StockMinimum", "Supplier", "VatPercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (Size = 16), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Decimal), @p6='?' (DbType = Int32), @p7='?' (DbType = Decimal), @p8='?' (Size = 19), @p9='?' (DbType = Decimal), @p10='?' (DbType = Boolean), @p11='?' (DbType = Decimal), @p12='?' (DbType = Decimal), @p13='?' (Size = 19), @p14='?', @p15='?' (DbType = Decimal), @p16='?' (DbType = Decimal), @p17='?' (DbType = Boolean), @p18='?' (DbType = Decimal), @p19='?' (DbType = Decimal), @p20='?' (DbType = Decimal), @p21='?' (DbType = DateTime), @p22='?' (DbType = Boolean), @p23='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Recipes" ("Id", "Active", "Category", "CreatedAt", "Description", "ElectricityPerBatch", "ExpectedBars", "FinalBatchWeight", "Flavor", "IndirectCostsPercent", "Keto", "LabelCostPerBar", "LaborPerBatch", "Name", "Notes", "OtherCostsPerBatch", "PackageCostPerBar", "SugarFree", "TargetProteinPerBar", "TargetWeightPerBar", "TransportPerBatch", "UpdatedAt", "Vegan", "WastePercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (Size = 16), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Decimal), @p6='?' (DbType = Int32), @p7='?' (DbType = Decimal), @p8='?' (Size = 22), @p9='?' (DbType = Decimal), @p10='?' (DbType = Boolean), @p11='?' (DbType = Decimal), @p12='?' (DbType = Decimal), @p13='?' (Size = 22), @p14='?', @p15='?' (DbType = Decimal), @p16='?' (DbType = Decimal), @p17='?' (DbType = Boolean), @p18='?' (DbType = Decimal), @p19='?' (DbType = Decimal), @p20='?' (DbType = Decimal), @p21='?' (DbType = DateTime), @p22='?' (DbType = Boolean), @p23='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Recipes" ("Id", "Active", "Category", "CreatedAt", "Description", "ElectricityPerBatch", "ExpectedBars", "FinalBatchWeight", "Flavor", "IndirectCostsPercent", "Keto", "LabelCostPerBar", "LaborPerBatch", "Name", "Notes", "OtherCostsPerBatch", "PackageCostPerBar", "SugarFree", "TargetProteinPerBar", "TargetWeightPerBar", "TransportPerBatch", "UpdatedAt", "Vegan", "WastePercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (Size = 16), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Decimal), @p6='?' (DbType = Int32), @p7='?' (DbType = Decimal), @p8='?' (Size = 20), @p9='?' (DbType = Decimal), @p10='?' (DbType = Boolean), @p11='?' (DbType = Decimal), @p12='?' (DbType = Decimal), @p13='?' (Size = 20), @p14='?', @p15='?' (DbType = Decimal), @p16='?' (DbType = Decimal), @p17='?' (DbType = Boolean), @p18='?' (DbType = Decimal), @p19='?' (DbType = Decimal), @p20='?' (DbType = Decimal), @p21='?' (DbType = DateTime), @p22='?' (DbType = Boolean), @p23='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Recipes" ("Id", "Active", "Category", "CreatedAt", "Description", "ElectricityPerBatch", "ExpectedBars", "FinalBatchWeight", "Flavor", "IndirectCostsPercent", "Keto", "LabelCostPerBar", "LaborPerBatch", "Name", "Notes", "OtherCostsPerBatch", "PackageCostPerBar", "SugarFree", "TargetProteinPerBar", "TargetWeightPerBar", "TransportPerBatch", "UpdatedAt", "Vegan", "WastePercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Boolean), @p2='?' (Size = 16), @p3='?' (DbType = DateTime), @p4='?', @p5='?' (DbType = Decimal), @p6='?' (DbType = Int32), @p7='?' (DbType = Decimal), @p8='?' (Size = 21), @p9='?' (DbType = Decimal), @p10='?' (DbType = Boolean), @p11='?' (DbType = Decimal), @p12='?' (DbType = Decimal), @p13='?' (Size = 21), @p14='?', @p15='?' (DbType = Decimal), @p16='?' (DbType = Decimal), @p17='?' (DbType = Boolean), @p18='?' (DbType = Decimal), @p19='?' (DbType = Decimal), @p20='?' (DbType = Decimal), @p21='?' (DbType = DateTime), @p22='?' (DbType = Boolean), @p23='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "Recipes" ("Id", "Active", "Category", "CreatedAt", "Description", "ElectricityPerBatch", "ExpectedBars", "FinalBatchWeight", "Flavor", "IndirectCostsPercent", "Keto", "LabelCostPerBar", "LaborPerBatch", "Name", "Notes", "OtherCostsPerBatch", "PackageCostPerBar", "SugarFree", "TargetProteinPerBar", "TargetWeightPerBar", "TransportPerBatch", "UpdatedAt", "Vegan", "WastePercent")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15, @p16, @p17, @p18, @p19, @p20, @p21, @p22, @p23);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Decimal), @p2='?' (DbType = Decimal), @p3='?' (DbType = Decimal), @p4='?' (DbType = Guid), @p5='?' (DbType = Decimal), @p6='?' (DbType = Decimal), @p7='?' (DbType = Decimal), @p8='?' (DbType = Decimal), @p9='?' (DbType = Decimal), @p10='?' (Size = 25), @p11='?' (DbType = Int32), @p12='?', @p13='?' (DbType = Decimal), @p14='?' (DbType = Decimal), @p15='?' (DbType = Decimal)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "IngredientNutritions" ("Id", "Carbohydrates", "CholesterolMg", "Fiber", "IngredientId", "Kcal", "Polyols", "Protein", "SaturatedFat", "SodiumMg", "Source", "SourceType", "SourceUrl", "Sugars", "TotalFat", "TransFat")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10, @p11, @p12, @p13, @p14, @p15);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Guid), @p2='?', @p3='?' (DbType = Boolean), @p4='?' (DbType = Decimal), @p5='?' (DbType = Guid), @p6='?' (DbType = Int32), @p7='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "RecipeIngredients" ("Id", "IngredientId", "Observation", "Optional", "Quantity", "RecipeId", "Section", "Unit")
+      VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = Int32), @p2='?' (DbType = Decimal), @p3='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "SalePrices" ("Id", "Channel", "Price", "RecipeId")
+      VALUES (@p0, @p1, @p2, @p3);
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5212
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\MichelCufreWIS\OneDrive - Smartlog Services S.L\Documentos\recetasApp\backend\src\BarFlow.Api
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."IngredientId", "t"."Observation", "t"."Optional", "t"."Quantity", "t"."RecipeId", "t"."Section", "t"."Unit", "t"."Id0", "t"."Active", "t"."BaseUnit", "t"."Brand", "t"."Category", "t"."DensityGPerMl", "t"."Name", "t"."NetPrice", "t"."Notes", "t"."PackageQuantity", "t"."PriceUpdatedAt", "t"."PurchaseUnit", "t"."StockCurrent", "t"."StockMinimum", "t"."Supplier", "t"."VatPercent", "t"."Id1", "t"."Carbohydrates", "t"."CholesterolMg", "t"."Fiber", "t"."IngredientId0", "t"."Kcal", "t"."Polyols", "t"."Protein", "t"."SaturatedFat", "t"."SodiumMg", "t"."Source", "t"."SourceType", "t"."SourceUrl", "t"."Sugars", "t"."TotalFat", "t"."TransFat", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t" ON "r"."Id" = "t"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN "SalePrices" AS "s" ON "r"."Id" = "s"."RecipeId"
+      ORDER BY "r"."Id"
+warn: Microsoft.EntityFrameworkCore.Query[10103]
+      The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t0"."Id", "t0"."IngredientId", "t0"."Observation", "t0"."Optional", "t0"."Quantity", "t0"."RecipeId", "t0"."Section", "t0"."Unit", "t0"."Id0", "t0"."Active", "t0"."BaseUnit", "t0"."Brand", "t0"."Category", "t0"."DensityGPerMl", "t0"."Name", "t0"."NetPrice", "t0"."Notes", "t0"."PackageQuantity", "t0"."PriceUpdatedAt", "t0"."PurchaseUnit", "t0"."StockCurrent", "t0"."StockMinimum", "t0"."Supplier", "t0"."VatPercent", "t0"."Id1", "t0"."Carbohydrates", "t0"."CholesterolMg", "t0"."Fiber", "t0"."IngredientId0", "t0"."Kcal", "t0"."Polyols", "t0"."Protein", "t0"."SaturatedFat", "t0"."SodiumMg", "t0"."Source", "t0"."SourceType", "t0"."SourceUrl", "t0"."Sugars", "t0"."TotalFat", "t0"."TransFat", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t0" ON "t"."Id" = "t0"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN "SalePrices" AS "s" ON "t"."Id" = "s"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "Ingredients" AS "i"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."IngredientId", "t"."Observation", "t"."Optional", "t"."Quantity", "t"."RecipeId", "t"."Section", "t"."Unit", "t"."Id0", "t"."Active", "t"."BaseUnit", "t"."Brand", "t"."Category", "t"."DensityGPerMl", "t"."Name", "t"."NetPrice", "t"."Notes", "t"."PackageQuantity", "t"."PriceUpdatedAt", "t"."PurchaseUnit", "t"."StockCurrent", "t"."StockMinimum", "t"."Supplier", "t"."VatPercent", "t"."Id1", "t"."Carbohydrates", "t"."CholesterolMg", "t"."Fiber", "t"."IngredientId0", "t"."Kcal", "t"."Polyols", "t"."Protein", "t"."SaturatedFat", "t"."SodiumMg", "t"."Source", "t"."SourceType", "t"."SourceUrl", "t"."Sugars", "t"."TotalFat", "t"."TransFat", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t" ON "r"."Id" = "t"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN "SalePrices" AS "s" ON "r"."Id" = "s"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t0"."Id", "t0"."IngredientId", "t0"."Observation", "t0"."Optional", "t0"."Quantity", "t0"."RecipeId", "t0"."Section", "t0"."Unit", "t0"."Id0", "t0"."Active", "t0"."BaseUnit", "t0"."Brand", "t0"."Category", "t0"."DensityGPerMl", "t0"."Name", "t0"."NetPrice", "t0"."Notes", "t0"."PackageQuantity", "t0"."PriceUpdatedAt", "t0"."PurchaseUnit", "t0"."StockCurrent", "t0"."StockMinimum", "t0"."Supplier", "t0"."VatPercent", "t0"."Id1", "t0"."Carbohydrates", "t0"."CholesterolMg", "t0"."Fiber", "t0"."IngredientId0", "t0"."Kcal", "t0"."Polyols", "t0"."Protein", "t0"."SaturatedFat", "t0"."SodiumMg", "t0"."Source", "t0"."SourceType", "t0"."SourceUrl", "t0"."Sugars", "t0"."TotalFat", "t0"."TransFat", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t0" ON "t"."Id" = "t0"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN "SalePrices" AS "s" ON "t"."Id" = "s"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "Ingredients" AS "i"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."IngredientId", "t"."Observation", "t"."Optional", "t"."Quantity", "t"."RecipeId", "t"."Section", "t"."Unit", "t"."Id0", "t"."Active", "t"."BaseUnit", "t"."Brand", "t"."Category", "t"."DensityGPerMl", "t"."Name", "t"."NetPrice", "t"."Notes", "t"."PackageQuantity", "t"."PriceUpdatedAt", "t"."PurchaseUnit", "t"."StockCurrent", "t"."StockMinimum", "t"."Supplier", "t"."VatPercent", "t"."Id1", "t"."Carbohydrates", "t"."CholesterolMg", "t"."Fiber", "t"."IngredientId0", "t"."Kcal", "t"."Polyols", "t"."Protein", "t"."SaturatedFat", "t"."SodiumMg", "t"."Source", "t"."SourceType", "t"."SourceUrl", "t"."Sugars", "t"."TotalFat", "t"."TransFat", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t" ON "r"."Id" = "t"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN "SalePrices" AS "s" ON "r"."Id" = "s"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t0"."Id", "t0"."IngredientId", "t0"."Observation", "t0"."Optional", "t0"."Quantity", "t0"."RecipeId", "t0"."Section", "t0"."Unit", "t0"."Id0", "t0"."Active", "t0"."BaseUnit", "t0"."Brand", "t0"."Category", "t0"."DensityGPerMl", "t0"."Name", "t0"."NetPrice", "t0"."Notes", "t0"."PackageQuantity", "t0"."PriceUpdatedAt", "t0"."PurchaseUnit", "t0"."StockCurrent", "t0"."StockMinimum", "t0"."Supplier", "t0"."VatPercent", "t0"."Id1", "t0"."Carbohydrates", "t0"."CholesterolMg", "t0"."Fiber", "t0"."IngredientId0", "t0"."Kcal", "t0"."Polyols", "t0"."Protein", "t0"."SaturatedFat", "t0"."SodiumMg", "t0"."Source", "t0"."SourceType", "t0"."SourceUrl", "t0"."Sugars", "t0"."TotalFat", "t0"."TransFat", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t0" ON "t"."Id" = "t0"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN "SalePrices" AS "s" ON "t"."Id" = "s"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "Ingredients" AS "i"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."IngredientId", "t"."Observation", "t"."Optional", "t"."Quantity", "t"."RecipeId", "t"."Section", "t"."Unit", "t"."Id0", "t"."Active", "t"."BaseUnit", "t"."Brand", "t"."Category", "t"."DensityGPerMl", "t"."Name", "t"."NetPrice", "t"."Notes", "t"."PackageQuantity", "t"."PriceUpdatedAt", "t"."PurchaseUnit", "t"."StockCurrent", "t"."StockMinimum", "t"."Supplier", "t"."VatPercent", "t"."Id1", "t"."Carbohydrates", "t"."CholesterolMg", "t"."Fiber", "t"."IngredientId0", "t"."Kcal", "t"."Polyols", "t"."Protein", "t"."SaturatedFat", "t"."SodiumMg", "t"."Source", "t"."SourceType", "t"."SourceUrl", "t"."Sugars", "t"."TotalFat", "t"."TransFat", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t" ON "r"."Id" = "t"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN "SalePrices" AS "s" ON "r"."Id" = "s"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t0"."Id", "t0"."IngredientId", "t0"."Observation", "t0"."Optional", "t0"."Quantity", "t0"."RecipeId", "t0"."Section", "t0"."Unit", "t0"."Id0", "t0"."Active", "t0"."BaseUnit", "t0"."Brand", "t0"."Category", "t0"."DensityGPerMl", "t0"."Name", "t0"."NetPrice", "t0"."Notes", "t0"."PackageQuantity", "t0"."PriceUpdatedAt", "t0"."PurchaseUnit", "t0"."StockCurrent", "t0"."StockMinimum", "t0"."Supplier", "t0"."VatPercent", "t0"."Id1", "t0"."Carbohydrates", "t0"."CholesterolMg", "t0"."Fiber", "t0"."IngredientId0", "t0"."Kcal", "t0"."Polyols", "t0"."Protein", "t0"."SaturatedFat", "t0"."SodiumMg", "t0"."Source", "t0"."SourceType", "t0"."SourceUrl", "t0"."Sugars", "t0"."TotalFat", "t0"."TransFat", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t0" ON "t"."Id" = "t0"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "t"."Id"
+      FROM (
+          SELECT "r"."Id"
+          FROM "Recipes" AS "r"
+          LIMIT 1
+      ) AS "t"
+      INNER JOIN "SalePrices" AS "s" ON "t"."Id" = "s"."RecipeId"
+      ORDER BY "t"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "Ingredients" AS "i"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "i"."Id", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+      FROM "Ingredients" AS "i"
+      LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      WHERE "i"."Active"
+      ORDER BY "i"."Name"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."Active", "r"."Category", "r"."CreatedAt", "r"."Description", "r"."ElectricityPerBatch", "r"."ExpectedBars", "r"."FinalBatchWeight", "r"."Flavor", "r"."IndirectCostsPercent", "r"."Keto", "r"."LabelCostPerBar", "r"."LaborPerBatch", "r"."Name", "r"."Notes", "r"."OtherCostsPerBatch", "r"."PackageCostPerBar", "r"."SugarFree", "r"."TargetProteinPerBar", "r"."TargetWeightPerBar", "r"."TransportPerBatch", "r"."UpdatedAt", "r"."Vegan", "r"."WastePercent"
+      FROM "Recipes" AS "r"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."IngredientId", "t"."Observation", "t"."Optional", "t"."Quantity", "t"."RecipeId", "t"."Section", "t"."Unit", "t"."Id0", "t"."Active", "t"."BaseUnit", "t"."Brand", "t"."Category", "t"."DensityGPerMl", "t"."Name", "t"."NetPrice", "t"."Notes", "t"."PackageQuantity", "t"."PriceUpdatedAt", "t"."PurchaseUnit", "t"."StockCurrent", "t"."StockMinimum", "t"."Supplier", "t"."VatPercent", "t"."Id1", "t"."Carbohydrates", "t"."CholesterolMg", "t"."Fiber", "t"."IngredientId0", "t"."Kcal", "t"."Polyols", "t"."Protein", "t"."SaturatedFat", "t"."SodiumMg", "t"."Source", "t"."SourceType", "t"."SourceUrl", "t"."Sugars", "t"."TotalFat", "t"."TransFat", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN (
+          SELECT "r0"."Id", "r0"."IngredientId", "r0"."Observation", "r0"."Optional", "r0"."Quantity", "r0"."RecipeId", "r0"."Section", "r0"."Unit", "i"."Id" AS "Id0", "i"."Active", "i"."BaseUnit", "i"."Brand", "i"."Category", "i"."DensityGPerMl", "i"."Name", "i"."NetPrice", "i"."Notes", "i"."PackageQuantity", "i"."PriceUpdatedAt", "i"."PurchaseUnit", "i"."StockCurrent", "i"."StockMinimum", "i"."Supplier", "i"."VatPercent", "i0"."Id" AS "Id1", "i0"."Carbohydrates", "i0"."CholesterolMg", "i0"."Fiber", "i0"."IngredientId" AS "IngredientId0", "i0"."Kcal", "i0"."Polyols", "i0"."Protein", "i0"."SaturatedFat", "i0"."SodiumMg", "i0"."Source", "i0"."SourceType", "i0"."SourceUrl", "i0"."Sugars", "i0"."TotalFat", "i0"."TransFat"
+          FROM "RecipeIngredients" AS "r0"
+          INNER JOIN "Ingredients" AS "i" ON "r0"."IngredientId" = "i"."Id"
+          LEFT JOIN "IngredientNutritions" AS "i0" ON "i"."Id" = "i0"."IngredientId"
+      ) AS "t" ON "r"."Id" = "t"."RecipeId"
+      ORDER BY "r"."Id"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."Id", "s"."Channel", "s"."Price", "s"."RecipeId", "r"."Id"
+      FROM "Recipes" AS "r"
+      INNER JOIN "SalePrices" AS "s" ON "r"."Id" = "s"."RecipeId"
+      ORDER BY "r"."Id"
