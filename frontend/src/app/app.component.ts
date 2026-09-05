@@ -21,6 +21,6 @@ export class AppComponent {
   nav=[
     {url:'/dashboard',label:'Dashboard'}, {url:'/ingredientes',label:'Ingredientes'},
     {url:'/recetas',label:'Recetas'}, {url:'/comparar',label:'Comparar'},
-    {url:'/produccion',label:'Producción'}, {url:'/simulador',label:'Simulador'},
+    {url:'/produccion',label:'Producción'}, {url:'/ventas',label:'Ventas'}, {url:'/simulador',label:'Simulador'},
     {url:'/configuracion',label:'Configuración'}];
 }

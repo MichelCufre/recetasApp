@@ -13,6 +13,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<SalePrice> SalePrices => Set<SalePrice>();
     public DbSet<ProductionBatch> ProductionBatches => Set<ProductionBatch>();
     public DbSet<ProductionBatchIngredient> ProductionBatchIngredients => Set<ProductionBatchIngredient>();
+    public DbSet<ProductSale> ProductSales => Set<ProductSale>();
+    public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<AppSetting> AppSettings => Set<AppSetting>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -26,6 +28,10 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
         b.Entity<SalePrice>().HasIndex(x => new { x.RecipeId, x.Channel }).IsUnique();
         b.Entity<ProductionBatch>().HasMany(x => x.Ingredients).WithOne().HasForeignKey(x => x.ProductionBatchId).OnDelete(DeleteBehavior.Cascade);
         b.Entity<ProductionBatch>().HasOne(x => x.Recipe).WithMany().HasForeignKey(x => x.RecipeId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ProductSale>().HasOne(x => x.Recipe).WithMany().HasForeignKey(x => x.RecipeId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ProductSale>().HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Restrict);
+        b.Entity<ProductSale>().HasIndex(x => x.OrderId);
+        b.Entity<Customer>().HasIndex(x => x.Name);
         foreach (var p in b.Model.GetEntityTypes().SelectMany(e => e.GetProperties()).Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
         { p.SetPrecision(18); p.SetScale(6); }
     }

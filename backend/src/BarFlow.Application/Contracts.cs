@@ -12,7 +12,8 @@ public record NutritionInput(decimal Kcal, decimal Protein, decimal Carbohydrate
 public record IngredientView(Guid Id, string Name, string Category, string? Brand, string? Supplier,
     Unit PurchaseUnit, decimal PackageQuantity, decimal NetPrice, decimal VatPercent, decimal GrossPrice,
     Unit BaseUnit, decimal CostPerBaseUnit, decimal? DensityGPerMl, DateTime PriceUpdatedAt, string? Notes,
-    bool Active, decimal StockCurrent, decimal StockMinimum, NutritionInput Nutrition);
+    bool Active, decimal StockCurrent, decimal StockMinimum, int RecipeCount, int ActiveRecipeCount,
+    NutritionInput Nutrition);
 
 public record RecipeLineInput(Guid IngredientId, decimal Quantity, Unit Unit, RecipeSection Section,
     bool Optional, string? Observation);
@@ -24,11 +25,12 @@ public record RecipeInput(string Name, string? Description, string? Flavor, stri
     decimal ElectricityPerBatch, decimal TransportPerBatch, decimal OtherCostsPerBatch,
     decimal IndirectCostsPercent, string? Notes, List<RecipeLineInput> Ingredients,
     List<SalePriceInput> SalePrices);
-public record RecipeSummary(Guid Id, string Name, string? Flavor, int Bars, decimal CostPerBar,
+public record RecipeSummary(Guid Id, string Name, string? Flavor, string Category, int Bars, decimal TargetWeightPerBar, decimal CostPerBar,
     decimal ProteinPerBar, decimal KcalPerBar, decimal? DirectPrice, decimal? GymPrice,
     decimal BestMargin, bool Active);
 public record RecipeDetail(Recipe Recipe, RecipeAnalysis Analysis,
     IReadOnlyDictionary<PriceChannel, Profitability> Profitability, IReadOnlyList<string> Alerts);
+public record RecipeVersionInput(string VersionName, decimal TargetWeightPerBar);
 public record DashboardView(int IngredientCount, int RecipeCount, decimal AverageCost,
     decimal AveragePrice, decimal AverageMargin, string? MostProfitable, string? MostExpensive,
     string? HighestProtein, string? LowestCalories, IReadOnlyList<RecipeSummary> Recipes,
@@ -37,6 +39,23 @@ public record BatchInput(Guid RecipeId, decimal Batches, int ExpectedBars, int A
     int DiscardedBars, decimal ActualWeight, bool DeductStock, DateTime? ProducedAt, string? Notes);
 public record BatchView(Guid Id, Guid RecipeId, string RecipeName, DateTime ProducedAt, int ActualBars,
     int DiscardedBars, decimal ActualWeight, decimal TotalCost, decimal CostPerGoodBar, decimal WastePercent);
+public record ProductSaleInput(Guid RecipeId, Guid? CustomerId, int Quantity, decimal UnitPrice, DateTime? SoldAt,
+    string? Channel, string? Notes);
+public record ProductSaleView(Guid Id, Guid OrderId, Guid RecipeId, string RecipeName, DateTime SoldAt, int Quantity,
+    decimal UnitPrice, decimal UnitCost, decimal Revenue, decimal Cost, decimal Profit,
+    decimal MarginPercent, string? Channel, string? Notes, Guid? CustomerId, string? CustomerName);
+public record CustomerInput(string Name, string? Phone, string? Notes);
+public record CustomerView(Guid Id, string Name, string? Phone, string? Notes, int Units,
+    int SalesCount, decimal Revenue, decimal Cost, decimal Profit, decimal MarginPercent);
+public record SaleOrderLineInput(Guid RecipeId, int Quantity, decimal UnitPrice);
+public record SaleOrderInput(Guid? CustomerId, DateTime? SoldAt, string? Channel, string? Notes,
+    List<SaleOrderLineInput> Lines);
+public record SaleOrderView(Guid OrderId, Guid? CustomerId, string? CustomerName, DateTime SoldAt,
+    string? Channel, string? Notes, int Units, decimal Revenue, decimal Cost, decimal Profit,
+    decimal MarginPercent, IReadOnlyList<ProductSaleView> Lines);
+public record CustomerDetail(CustomerView Customer, IReadOnlyList<SaleOrderView> Orders);
+public record SalesSummary(decimal Revenue, decimal Cost, decimal Profit, decimal MarginPercent,
+    int Units, int SalesCount, IReadOnlyList<ProductSaleView> Sales, IReadOnlyList<CustomerView> Customers);
 public record SimulatorLine(string Label, int UnitsPerDay, int DaysPerWeek, decimal Price, decimal Cost);
 public record SimulatorResult(decimal DailyRevenue, decimal DailyCost, decimal DailyProfit,
     decimal WeeklyRevenue, decimal WeeklyProfit, decimal MonthlyRevenue, decimal MonthlyProfit,
@@ -48,6 +67,7 @@ public interface IIngredientService
     Task<IngredientView?> Get(Guid id, CancellationToken ct);
     Task<IngredientView> Create(IngredientInput input, CancellationToken ct);
     Task<IngredientView?> Update(Guid id, IngredientInput input, CancellationToken ct);
+    Task<bool> Delete(Guid id, CancellationToken ct);
     Task<IReadOnlyList<IngredientPriceHistory>> PriceHistory(Guid id, CancellationToken ct);
 }
 public interface IRecipeService
@@ -58,11 +78,22 @@ public interface IRecipeService
     Task<RecipeDetail?> Update(Guid id, RecipeInput input, CancellationToken ct);
     Task<DashboardView> Dashboard(CancellationToken ct);
     Task<IReadOnlyList<RecipeDetail>> Compare(IEnumerable<Guid> ids, CancellationToken ct);
+    Task<IReadOnlyList<RecipeSummary>> Versions(Guid id, CancellationToken ct);
+    Task<RecipeDetail> CreateVersion(Guid id, RecipeVersionInput input, CancellationToken ct);
 }
 public interface IProductionService
 {
     Task<IReadOnlyList<BatchView>> List(CancellationToken ct);
     Task<BatchView> Create(BatchInput input, CancellationToken ct);
+}
+public interface IProductSaleService
+{
+    Task<SalesSummary> List(CancellationToken ct);
+    Task<ProductSaleView> Create(ProductSaleInput input, CancellationToken ct);
+    Task<bool> Delete(Guid id, CancellationToken ct);
+    Task<CustomerView> CreateCustomer(CustomerInput input, CancellationToken ct);
+    Task<SaleOrderView> CreateOrder(SaleOrderInput input, CancellationToken ct);
+    Task<CustomerDetail?> Customer(Guid id, CancellationToken ct);
 }
 public interface ISettingsService
 {

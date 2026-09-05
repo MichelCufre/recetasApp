@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent, IngredientsComponent, IngredientFormComponent, RecipesComponent, RecipeDetailComponent, RecipeFormComponent, CompareComponent, ProductionComponent, SimulatorComponent, SettingsComponent } from './pages/pages';
+import { DashboardComponent, IngredientsComponent, IngredientFormComponent, RecipesComponent, RecipeDetailComponent, RecipeFormComponent, CompareComponent, ProductionComponent, SalesComponent, SimulatorComponent, SettingsComponent } from './pages/pages';
 
 export const routes: Routes = [
   {path:'dashboard',component:DashboardComponent}, {path:'ingredientes',component:IngredientsComponent},
@@ -7,6 +7,7 @@ export const routes: Routes = [
   {path:'recetas',component:RecipesComponent}, {path:'recetas/nueva',component:RecipeFormComponent},
   {path:'recetas/:id/editar',component:RecipeFormComponent}, {path:'recetas/:id',component:RecipeDetailComponent},
   {path:'comparar',component:CompareComponent}, {path:'produccion',component:ProductionComponent},
+  {path:'ventas',component:SalesComponent},
   {path:'simulador',component:SimulatorComponent}, {path:'configuracion',component:SettingsComponent},
   {path:'',pathMatch:'full',redirectTo:'dashboard'}, {path:'**',redirectTo:'dashboard'}
 ];

@@ -138,6 +138,34 @@ public sealed class ProductionBatchIngredient
     public decimal TotalCostSnapshot { get; set; }
 }
 
+public sealed class ProductSale
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid OrderId { get; set; } = Guid.NewGuid();
+    public Guid RecipeId { get; set; }
+    public Recipe Recipe { get; set; } = null!;
+    public Guid? CustomerId { get; set; }
+    public Customer? Customer { get; set; }
+    public DateTime SoldAt { get; set; } = DateTime.UtcNow;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal UnitCostSnapshot { get; set; }
+    public string? Channel { get; set; }
+    public string? Notes { get; set; }
+    public decimal Revenue => Quantity * UnitPrice;
+    public decimal Cost => Quantity * UnitCostSnapshot;
+    public decimal Profit => Revenue - Cost;
+}
+
+public sealed class Customer
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Name { get; set; } = "";
+    public string? Phone { get; set; }
+    public string? Notes { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+}
+
 public sealed class AppSetting
 {
     public int Id { get; set; } = 1;

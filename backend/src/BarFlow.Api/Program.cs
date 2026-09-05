@@ -6,7 +6,7 @@ builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Co
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200")));
+builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()));
 builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("Default") ?? throw new InvalidOperationException("Falta ConnectionStrings:Default"));
 var app = builder.Build();
 app.UseExceptionHandler("/error");

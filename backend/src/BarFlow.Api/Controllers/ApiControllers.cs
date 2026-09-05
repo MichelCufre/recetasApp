@@ -12,6 +12,7 @@ public sealed class IngredientsController(IIngredientService service):Controller
     [HttpGet("{id:guid}")] public async Task<ActionResult<IngredientView>> Get(Guid id,CancellationToken ct)=>(await service.Get(id,ct)) is { } x?Ok(x):NotFound();
     [HttpPost] public async Task<ActionResult<IngredientView>> Create(IngredientInput input,CancellationToken ct){var x=await service.Create(input,ct);return CreatedAtAction(nameof(Get),new{id=x.Id},x);}
     [HttpPut("{id:guid}")] public async Task<ActionResult<IngredientView>> Update(Guid id,IngredientInput input,CancellationToken ct)=>(await service.Update(id,input,ct)) is { } x?Ok(x):NotFound();
+    [HttpDelete("{id:guid}")] public async Task<IActionResult> Delete(Guid id,CancellationToken ct)=>(await service.Delete(id,ct))?NoContent():NotFound();
     [HttpGet("{id:guid}/price-history")] public Task<IReadOnlyList<BarFlow.Domain.IngredientPriceHistory>> History(Guid id,CancellationToken ct)=>service.PriceHistory(id,ct);
     [HttpGet("export.csv")] public async Task<IActionResult> Export(CancellationToken ct){var rows=await service.List(null,true,ct);var csv=new StringBuilder("Nombre;Categoría;Proveedor;Precio neto;IVA;Costo base;Unidad base;Proteína;Kcal\n");foreach(var x in rows)csv.AppendLine($"{x.Name};{x.Category};{x.Supplier};{x.NetPrice};{x.VatPercent};{x.CostPerBaseUnit};{x.BaseUnit};{x.Nutrition.Protein};{x.Nutrition.Kcal}");return File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray(),"text/csv","ingredientes.csv");}
 }
@@ -23,6 +24,8 @@ public sealed class RecipesController(IRecipeService service):ControllerBase
     [HttpGet("{id:guid}")] public async Task<ActionResult<RecipeDetail>> Get(Guid id,CancellationToken ct)=>(await service.Get(id,ct)) is { } x?Ok(x):NotFound();
     [HttpGet("{id:guid}/cost")] public async Task<ActionResult<object>> Cost(Guid id,CancellationToken ct)=>(await service.Get(id,ct)) is { } x?Ok(x.Analysis.Cost):NotFound();
     [HttpGet("{id:guid}/nutrition")] public async Task<ActionResult<object>> Nutrition(Guid id,CancellationToken ct)=>(await service.Get(id,ct)) is { } x?Ok(new{x.Analysis.TotalNutrition,x.Analysis.PerBar,x.Analysis.Per100G}):NotFound();
+    [HttpGet("{id:guid}/versions")] public Task<IReadOnlyList<RecipeSummary>> Versions(Guid id,CancellationToken ct)=>service.Versions(id,ct);
+    [HttpPost("{id:guid}/versions")] public async Task<ActionResult<RecipeDetail>> CreateVersion(Guid id,RecipeVersionInput input,CancellationToken ct)=>Ok(await service.CreateVersion(id,input,ct));
     [HttpPost] public async Task<ActionResult<RecipeDetail>> Create(RecipeInput input,CancellationToken ct){var x=await service.Create(input,ct);return CreatedAtAction(nameof(Get),new{id=x.Recipe.Id},x);}
     [HttpPut("{id:guid}")] public async Task<ActionResult<RecipeDetail>> Update(Guid id,RecipeInput input,CancellationToken ct)=>(await service.Update(id,input,ct)) is { } x?Ok(x):NotFound();
     [HttpGet("compare")] public Task<IReadOnlyList<RecipeDetail>> Compare([FromQuery]Guid[] ids,CancellationToken ct)=>service.Compare(ids,ct);
@@ -34,6 +37,17 @@ public sealed class ProductionController(IProductionService service):ControllerB
 {
     [HttpGet] public Task<IReadOnlyList<BatchView>> List(CancellationToken ct)=>service.List(ct);
     [HttpPost] public async Task<ActionResult<BatchView>> Create(BatchInput input,CancellationToken ct)=>Ok(await service.Create(input,ct));
+}
+
+[ApiController,Route("api/sales")]
+public sealed class SalesController(IProductSaleService service):ControllerBase
+{
+    [HttpGet] public Task<SalesSummary> List(CancellationToken ct)=>service.List(ct);
+    [HttpPost] public async Task<ActionResult<ProductSaleView>> Create(ProductSaleInput input,CancellationToken ct)=>Ok(await service.Create(input,ct));
+    [HttpPost("orders")] public async Task<ActionResult<SaleOrderView>> CreateOrder(SaleOrderInput input,CancellationToken ct)=>Ok(await service.CreateOrder(input,ct));
+    [HttpDelete("{id:guid}")] public async Task<IActionResult> Delete(Guid id,CancellationToken ct)=>(await service.Delete(id,ct))?NoContent():NotFound();
+    [HttpPost("customers")] public async Task<ActionResult<CustomerView>> CreateCustomer(CustomerInput input,CancellationToken ct)=>Ok(await service.CreateCustomer(input,ct));
+    [HttpGet("customers/{id:guid}")] public async Task<ActionResult<CustomerDetail>> Customer(Guid id,CancellationToken ct)=>(await service.Customer(id,ct)) is { } x?Ok(x):NotFound();
 }
 
 [ApiController]

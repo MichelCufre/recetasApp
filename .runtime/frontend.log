@@ -1,0 +1,60 @@
+
+> frontend@0.0.0 start
+> ng serve --host 127.0.0.1
+
+
+Initial Chunk Files   | Names         |  Raw Size
+vendor.js             | vendor        |   4.05 MB |
+polyfills.js          | polyfills     | 252.54 kB |
+styles.css, styles.js | styles        | 251.20 kB |
+main.js               | main          | 178.29 kB |
+runtime.js            | runtime       |   6.49 kB |
+
+| Initial Total |   4.72 MB
+
+Build at: 2026-08-15T16:27:21.824Z - Hash: adf7dcecbfefbc3b - Time: 16396ms
+
+** Angular Live Development Server is listening on 127.0.0.1:4200, open your browser on http://127.0.0.1:4200/ **
+
+
+√ Compiled successfully.
+
+Initial Chunk Files | Names   |  Raw Size
+main.js             | main    | 181.42 kB |
+runtime.js          | runtime |   6.49 kB |
+
+3 unchanged chunks
+
+Build at: 2026-08-15T16:33:24.087Z - Hash: 15be8614d4958eb0 - Time: 1298ms
+
+√ Compiled successfully.
+
+Initial Chunk Files | Names   |  Raw Size
+main.js             | main    | 193.18 kB |
+runtime.js          | runtime |   6.49 kB |
+
+3 unchanged chunks
+
+Build at: 2026-08-15T16:57:44.830Z - Hash: 5cda5548a089f871 - Time: 2198ms
+
+√ Compiled successfully.
+
+Initial Chunk Files | Names   |  Raw Size
+main.js             | main    | 190.10 kB |
+runtime.js          | runtime |   6.49 kB |
+
+3 unchanged chunks
+
+Build at: 2026-08-15T16:58:03.178Z - Hash: a8a6c43cbdc4c787 - Time: 922ms
+
+√ Compiled successfully.
+
+Initial Chunk Files | Names   |  Raw Size
+main.js             | main    | 184.74 kB |
+runtime.js          | runtime |   6.49 kB |
+
+3 unchanged chunks
+
+Build at: 2026-08-15T16:58:56.880Z - Hash: 206516d6e10e46dc - Time: 1181ms
+
+√ Compiled successfully.

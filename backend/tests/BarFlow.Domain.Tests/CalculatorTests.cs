@@ -33,8 +33,16 @@ public class CalculatorTests
     {
         var result = new RecipeCalculator().Analyze(Recipe(200, 10));
         Assert.Equal(180m, result.TotalNutrition.Protein);
-        Assert.Equal(18m, result.PerBar.Protein);
+        Assert.Equal(54m, result.PerBar.Protein);
         Assert.Equal(90m, result.Per100G.Protein);
+    }
+
+    [Fact] public void Calculates_per_bar_nutrition_from_configured_bar_weight()
+    {
+        var recipe = Recipe(200, 10); recipe.TargetWeightPerBar = 25;
+        var result = new RecipeCalculator().Analyze(recipe);
+        Assert.Equal(22.5m, result.PerBar.Protein);
+        Assert.Equal(result.Per100G.Protein * .25m, result.PerBar.Protein);
     }
 
     [Fact] public void Uses_real_weight_for_per_100g_values()
@@ -42,6 +50,7 @@ public class CalculatorTests
         var recipe = Recipe(200, 10); recipe.FinalBatchWeight = 180;
         var result = new RecipeCalculator().Analyze(recipe);
         Assert.Equal(100m, Math.Round(result.Per100G.Protein, 6));
+        Assert.Equal(60m, Math.Round(result.PerBar.Protein, 6));
         Assert.Equal(10m, result.RealWastePercent);
     }
 

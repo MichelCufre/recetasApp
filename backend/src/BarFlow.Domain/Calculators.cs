@@ -66,11 +66,15 @@ public sealed class RecipeCalculator
         var indirect = direct * recipe.IndirectCostsPercent / 100m;
         var total = direct + indirect;
         var usedWeight = recipe.FinalBatchWeight is > 0 ? recipe.FinalBatchWeight.Value : weight;
+        if (usedWeight <= 0) throw new InvalidOperationException("El peso del lote debe ser mayor a cero.");
+        if (recipe.TargetWeightPerBar <= 0) throw new InvalidOperationException("El peso objetivo de la barrita debe ser mayor a cero.");
         decimal? realWaste = recipe.FinalBatchWeight is > 0 && weight > 0 ? (weight - recipe.FinalBatchWeight.Value) / weight * 100m : null;
+        var per100G = nutrition.Scale(100m / usedWeight);
+        var perBar = per100G.Scale(recipe.TargetWeightPerBar / 100m);
         return new(weight, usedWeight, realWaste,
             new(ingredientCost, waste, packaging, recipe.LaborPerBatch, recipe.ElectricityPerBatch,
                 recipe.TransportPerBatch, recipe.OtherCostsPerBatch, indirect, total, total / recipe.ExpectedBars),
-            nutrition, nutrition.Scale(1m / recipe.ExpectedBars), nutrition.Scale(100m / usedWeight), parts);
+            nutrition, perBar, per100G, parts);
     }
 
     public Profitability Profit(decimal salePrice, decimal unitCost, int batchSize = 1)
